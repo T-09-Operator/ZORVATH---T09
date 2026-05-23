@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>SIGMA UNIVERSAL CORE</title>
+
+<style>
+body {
+    margin:0;
+    background:black;
+    color:#00ff66;
+    font-family:monospace;
+    overflow:hidden;
+}
+
+#ui {
+    position:absolute;
+    left:0;
+    top:0;
+    width:30%;
+    height:100%;
+    border-right:1px solid #00ff66;
+    padding:10px;
+    box-sizing:border-box;
+}
+
+#canvas {
+    position:absolute;
+    left:30%;
+    top:0;
+    width:70%;
+    height:100%;
+}
+
+#log {
+    height:45%;
+    overflow:auto;
+    border:1px solid #00ff66;
+    padding:5px;
+}
+
+input,button {
+    background:black;
+    border:1px solid #00ff66;
+    color:#00ff66;
+    padding:6px;
+}
+
+.user{color:white;}
+.ai{color:#00ff66;}
+.sys{color:#00ffff;}
+</style>
+</head>
+
+<body>
+
+<div id="ui">
+
+<h3>SIGMA CORE ONEFILE</h3>
+
+<div id="log"></div>
+
+<input id="input" placeholder="comando Sigma...">
+<button onclick="send()">Enviar</button>
+<button onclick="node()">Nó</button>
+<button onclick="toggleAI()">IA Real</button>
+
+</div>
+
+<canvas id="canvas"></canvas>
+
+<script>
+
+const c=document.getElementById("canvas");
+const ctx=c.getContext("2d");
+
+c.width=window.innerWidth*0.7;
+c.height=window.innerHeight;
+
+let nodes=JSON.parse(localStorage.getItem("sigma_nodes")||"[]");
+let aiEnabled=false;
+
+// 🔁 “multiplayer fake real-time”
+const channel = new BroadcastChannel("sigma_network");
+
+channel.onmessage=(e)=>{
+    if(e.data.type==="node"){
+        nodes.push(e.data.node);
+        log("NODE GLOBAL RECEBIDO","sys");
+    }
+    if(e.data.type==="msg"){
+        log(e.data.text,"sys");
+    }
+};
+
+// =====================
+// LOG SYSTEM
+// =====================
+function log(t,type="ai"){
+    let d=document.createElement("div");
+    d.className=type;
+    d.innerHTML=t;
+    document.getElementById("log").appendChild(d);
+}
+
+// =====================
+// NODE SYSTEM
+// =====================
+function node(){
+
+    let n={
+        x:Math.random()*c.width,
+        y:Math.random()*c.height
+    };
+
+    nodes.push(n);
+
+    localStorage.setItem("sigma_nodes",JSON.stringify(nodes));
+
+    channel.postMessage({type:"node",node:n});
+}
+
+// =====================
+// IA REAL (OPCIONAL)
+// =====================
+async function askAI(msg){
+
+    // ⚠️ se não colocar key, usa Zorvath simulado
+    const API_KEY = "SUA_API_KEY_AQUI";
+
+    if(!API_KEY || API_KEY.includes("SUA")) {
+        return "ZORVATH: modo simulado ativo → " + msg;
+    }
+
+    const res = await fetch("https://api.openai.com/v1/chat/completions",{
+        method:"POST",
+        headers:{
+            "Content-Type":"application/json",
+            "Authorization":"Bearer "+API_KEY
+        },
+        body:JSON.stringify({
+            model:"gpt-4o-mini",
+            messages:[
+                {
+                    role:"system",
+                    content:"Você é ZORVATH, uma IA de um sistema Sigma. Responda de forma misteriosa e técnica."
+                },
+                {
+                    role:"user",
+                    content:msg
+                }
+            ]
+        })
+    });
+
+    const data=await res.json();
+    return data.choices[0].message.content;
+}
+
+// =====================
+// SEND
+// =====================
+async function send(){
+
+    let i=document.getElementById("input");
+    if(!i.value)return;
+
+    log("VOCÊ: "+i.value,"user");
+
+    let reply;
+
+    if(aiEnabled){
+        reply=await askAI(i.value);
+    } else {
+        reply="ZORVATH: sistema simbólico ativo → "+i.value;
+    }
+
+    log(reply,"ai");
+
+    channel.postMessage({type:"msg",text:reply});
+
+    i.value="";
+}
+
+// =====================
+// IA TOGGLE
+// =====================
+function toggleAI(){
+    aiEnabled=!aiEnabled;
+    log("IA REAL: "+aiEnabled,"sys");
+}
+
+// =====================
+// DRAW
+// =====================
+function draw(){
+
+    ctx.clearRect(0,0,c.width,c.height);
+
+    for(let n of nodes){
+        ctx.beginPath();
+        ctx.arc(n.x,n.y,5,0,Math.PI*2);
+        ctx.fillStyle="#00ff66";
+        ctx.fill();
+    }
+
+    requestAnimationFrame(draw);
+}
+
+draw();
+
+</script>
+
+</body>
+</html>
