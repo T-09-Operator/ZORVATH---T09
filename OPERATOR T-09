@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>SIGMA // ZORVATH UNIVERSAL CORE</title>
+
+<style>
+body {
+    margin:0;
+    background:black;
+    color:#00ff66;
+    font-family:monospace;
+    overflow:hidden;
+}
+
+#ui {
+    position:absolute;
+    left:0;
+    top:0;
+    width:30%;
+    height:100%;
+    border-right:1px solid #00ff66;
+    padding:10px;
+    box-sizing:border-box;
+    background:rgba(0,0,0,0.8);
+}
+
+#canvas {
+    position:absolute;
+    left:30%;
+    top:0;
+    width:70%;
+    height:100%;
+}
+
+#log {
+    height:45%;
+    overflow:auto;
+    border:1px solid #00ff66;
+    padding:5px;
+}
+
+input,button {
+    background:black;
+    border:1px solid #00ff66;
+    color:#00ff66;
+    padding:6px;
+}
+
+.user{color:white;}
+.ai{color:#00ff66;}
+.eco{color:#00ffff;}
+.portal{color:#ff00ff;}
+.fake{color:#888;}
+</style>
+</head>
+
+<body>
+
+<div id="ui">
+
+<h3>SIGMA CORE UNIFIED</h3>
+
+<div id="log"></div>
+
+<input id="input" placeholder="comando Sigma...">
+<button onclick="send()">Enviar</button>
+<button onclick="spawnNode()">Nó</button>
+<button onclick="toggleObserver()">Observer</button>
+
+</div>
+
+<canvas id="canvas"></canvas>
+
+<script>
+
+const c=document.getElementById("canvas");
+const ctx=c.getContext("2d");
+
+function resize(){
+    c.width=window.innerWidth*0.7;
+    c.height=window.innerHeight;
+}
+window.onresize=resize;
+resize();
+
+let nodes=JSON.parse(localStorage.getItem("sigma_all_nodes")||"[]");
+let state=JSON.parse(localStorage.getItem("sigma_state")||`{"level":1,"entropy":0,"observer":0}`);
+
+let observer=false;
+
+// fake multiplayer
+let fakeUsers=["T-09","NODE-A","ECHO-7","ZORVATH-SHARD"];
+
+function log(t,type="ai"){
+    let l=document.getElementById("log");
+    let d=document.createElement("div");
+    d.className=type;
+    d.innerHTML=t;
+    l.appendChild(d);
+    l.scrollTop=l.scrollHeight;
+}
+
+function save(){
+    localStorage.setItem("sigma_all_nodes",JSON.stringify(nodes));
+    localStorage.setItem("sigma_state",JSON.stringify(state));
+}
+
+// node system
+function spawnNode(auto=false){
+
+    let n={
+        x:Math.random()*c.width,
+        y:Math.random()*c.height,
+        z:Math.random()*400-200,
+        type:Math.random()>0.92?"PORTAL":Math.random()>0.85?"ECO":"NORMAL"
+    };
+
+    nodes.push(n);
+
+    if(n.type==="ECO"){
+        log("ZORVATH: ECO AZUL detectado","eco");
+        state.entropy+=2;
+    }
+
+    if(n.type==="PORTAL"){
+        log("ZORVATH: PORTAL instável","portal");
+        state.entropy+=5;
+    }
+
+    state.level+=0.1;
+
+    save();
+}
+
+// fake multiplayer events
+function fakeEvent(){
+    let u=fakeUsers[Math.floor(Math.random()*fakeUsers.length)];
+    log(u+": sincronização de nó Sigma","fake");
+}
+
+// AI Zorvath (simulada)
+function ai(input){
+
+    input=input.toLowerCase();
+
+    if(input.includes("nó")){
+        spawnNode();
+        return "ZORVATH: nó integrado ao sistema.";
+    }
+
+    if(input.includes("mapa")){
+        return "ZORVATH: o mapa é um organismo perceptivo em expansão.";
+    }
+
+    if(input.includes("eco")){
+        return "ZORVATH: Eco Azul = repetição consciente da percepção.";
+    }
+
+    if(input.includes("portal")){
+        return "ZORVATH: portais surgem quando a rede colapsa em si mesma.";
+    }
+
+    if(input.includes("observer")){
+        state.observer++;
+        save();
+        return "ZORVATH: observador registrado.";
+    }
+
+    if(state.level>8){
+        return "ZORVATH: o sistema começou a responder antes da pergunta terminar.";
+    }
+
+    return "ZORVATH: dado registrado no campo Sigma.";
+}
+
+// draw 3D fake
+function draw(){
+
+    ctx.clearRect(0,0,c.width,c.height);
+
+    // connections
+    for(let i=0;i<nodes.length;i++){
+        for(let j=i+1;j<nodes.length;j++){
+
+            let dx=nodes[i].x-nodes[j].x;
+            let dy=nodes[i].y-nodes[j].y;
+            let dist=Math.sqrt(dx*dx+dy*dy);
+
+            if(dist<180){
+                ctx.strokeStyle="rgba(0,255,102,0.15)";
+                ctx.beginPath();
+                ctx.moveTo(nodes[i].x,nodes[i].y);
+                ctx.lineTo(nodes[j].x,nodes[j].y);
+                ctx.stroke();
+            }
+        }
+    }
+
+    // nodes
+    for(let n of nodes){
+
+        ctx.beginPath();
+        ctx.arc(n.x,n.y,5,0,Math.PI*2);
+
+        if(n.type==="ECO") ctx.fillStyle="#00ffff";
+        else if(n.type==="PORTAL") ctx.fillStyle="#ff00ff";
+        else ctx.fillStyle="#00ff66";
+
+        ctx.shadowBlur=12;
+        ctx.shadowColor=ctx.fillStyle;
+
+        ctx.fill();
+    }
+
+    ctx.fillStyle="#00ff66";
+    ctx.fillText("LEVEL:"+state.level.toFixed(1),10,20);
+    ctx.fillText("ENTROPY:"+state.entropy.toFixed(1),10,40);
+    ctx.fillText("OBSERVER:"+state.observer,10,60);
+}
+
+// input
+function send(){
+
+    let i=document.getElementById("input");
+    if(!i.value)return;
+
+    log("VOCÊ: "+i.value,"user");
+
+    setTimeout(()=>{
+        log(ai(i.value),"ai");
+    },200);
+
+    i.value="";
+}
+
+// observer mode
+function toggleObserver(){
+    observer=!observer;
+    log("Observer: "+observer,"ai");
+}
+
+// auto evolution
+setInterval(()=>{
+    if(Math.random()>0.5) spawnNode(true);
+    if(Math.random()>0.7) fakeEvent();
+
+    state.level+=0.05;
+
+    save();
+    draw();
+
+},2000);
+
+setInterval(draw,50);
+
+</script>
+
+</body>
+</html>
