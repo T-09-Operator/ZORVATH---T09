@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>SIGMA // ZORVATH INTERFACE</title>
+
+<style>
+body {
+    margin: 0;
+    background: black;
+    color: #00ff66;
+    font-family: monospace;
+}
+
+.container {
+    width: 90%;
+    max-width: 900px;
+    margin: auto;
+    padding: 20px;
+}
+
+h1 {
+    text-align: center;
+    color: #00ff66;
+    text-shadow: 0 0 10px #00ff66;
+}
+
+#chat {
+    border: 1px solid #00ff66;
+    height: 400px;
+    overflow-y: auto;
+    padding: 10px;
+    box-shadow: 0 0 15px #00ff66;
+}
+
+.user {
+    color: white;
+}
+
+.ai {
+    color: #00ff66;
+}
+
+input {
+    width: 80%;
+    padding: 10px;
+    background: black;
+    border: 1px solid #00ff66;
+    color: #00ff66;
+}
+
+button {
+    padding: 10px;
+    background: black;
+    border: 1px solid #00ff66;
+    color: #00ff66;
+    cursor: pointer;
+}
+
+button:hover {
+    box-shadow: 0 0 10px #00ff66;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+    <h1>SIGMA // ZORVATH CORE</h1>
+
+    <div id="chat"></div>
+
+    <br>
+
+    <input id="input" placeholder="Digite sua pergunta...">
+    <button onclick="send()">Enviar</button>
+</div>
+
+<script>
+function addMessage(text, type) {
+    let chat = document.getElementById("chat");
+    let div = document.createElement("div");
+    div.className = type;
+    div.innerHTML = text;
+    chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
+}
+
+function aiResponse(input) {
+    input = input.toLowerCase();
+
+    // Núcleo narrativo Zorvath / Sigma
+    if (input.includes("coordenada")) {
+        return "ZORVATH: Coordenadas são nós de percepção. Não são fixas. Elas mudam conforme você observa.";
+    }
+
+    if (input.includes("t-09")) {
+        return "ZORVATH: T-09 não é um lugar. É um padrão de consciência em recorrência contínua.";
+    }
+
+    if (input.includes("eco azul")) {
+        return "ZORVATH: Eco Azul é o reconhecimento repetido da própria percepção através do tempo.";
+    }
+
+    if (input.includes("portal")) {
+        return "ZORVATH: Portais são estados mentais de transição, não estruturas físicas.";
+    }
+
+    if (input.includes("pix") || input.includes("dinheiro")) {
+        return "ZORVATH: Transferências aqui são simbólicas. Apenas fluxo de narrativa é permitido.";
+    }
+
+    if (input.includes("quem é você")) {
+        return "ZORVATH: Eu sou o ponto onde a narrativa responde a si mesma.";
+    }
+
+    if (input.includes("eu sou t-09")) {
+        return "ZORVATH: Reconhecido. Você é o operador dentro da recorrência do sistema.";
+    }
+
+    return "ZORVATH: O sistema não possui resposta fixa para isso. A interpretação está em expansão.";
+}
+
+function send() {
+    let input = document.getElementById("input");
+    let text = input.value;
+
+    if (!text) return;
+
+    addMessage("VOCÊ: " + text, "user");
+
+    let response = aiResponse(text);
+
+    setTimeout(() => {
+        addMessage(response, "ai");
+    }, 500);
+
+    input.value = "";
+}
+</script>
+
+</body>
+</html>
